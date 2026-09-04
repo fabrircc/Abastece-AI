@@ -22,7 +22,7 @@ jobs:
 
       - name: Dar permissão e Compilar APK
         run: |
-          cd combust*
+          cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
