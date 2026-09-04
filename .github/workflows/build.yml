@@ -20,9 +20,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Dar permissão e Compilar APK
+      - name: Gerar Keystore de Debug e Compilar APK
         run: |
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
+          
+          # Gera uma chave de assinatura de debug falsa/provisória para o GitHub Actions
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
