@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -26,7 +30,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -37,7 +43,6 @@ import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -83,12 +88,6 @@ import com.example.ui.viewmodel.VehicleViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 
 @Composable
 fun ChatScreen(
@@ -102,6 +101,16 @@ fun ChatScreen(
     val pendingFinances by viewModel.pendingFinanceActions.collectAsState()
 
     var textInput by remember { mutableStateOf("") }
+    var imagemAnexadaUri by remember { mutableStateOf<Uri?>(null) }
+    
+    // Lançador nativo para selecionar imagens/cupons da galeria do celular
+    val selecionarFotoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> 
+            imagemAnexadaUri = uri 
+        }
+    )
+
     val listState = rememberLazyListState()
 
     // Auto-scroll on new message
@@ -293,7 +302,7 @@ fun ChatScreen(
             }
         }
 
-        // Sleek Input Bar matching HTML: bg-[#E9E9EF] rounded-3xl p-3 border border-white
+        // Sleek Input Bar com o Botão de Anexo (+) integrado
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -302,62 +311,116 @@ fun ChatScreen(
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.surface)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = textInput,
-                    onValueChange = { textInput = it },
-                    placeholder = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Se houver uma imagem anexada, mostra uma prévia sutil com opção de remover
+                if (imagemAnexadaUri != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Text(
-                            text = "Abasteci 35L de Gasolina no Posto...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                            text = "📎 Cupom/Foto anexado",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
                         )
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("chat_input_field"),
-                    shape = RoundedCornerShape(20.dp),
-                    maxLines = 4,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    )
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                IconButton(
-                    onClick = {
-                        if (textInput.isNotBlank()) {
-                            viewModel.sendMessage(textInput)
-                            textInput = ""
+                        IconButton(
+                            onClick = { imagemAnexadaUri = null },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Remover anexo",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
-                    },
-                    enabled = textInput.isNotBlank() && !isGenerating,
+                    }
+                }
+
+                Row(
                     modifier = Modifier
-                        .size(46.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            if (textInput.isNotBlank() && !isGenerating)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        )
-                        .testTag("send_message_button")
+                        .fillMaxWidth()
+                        .padding(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Enviar Mensagem",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                    // Botão "+" para abrir a galeria (Anexar fotos/cupons)
+                    IconButton(
+                        onClick = {
+                            selecionarFotoLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Anexar cupom ou foto",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    OutlinedTextField(
+                        value = textInput,
+                        onValueChange = { textInput = it },
+                        placeholder = {
+                            Text(
+                                text = "Abasteci 35L de Gasolina no Posto...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("chat_input_field"),
+                        shape = RoundedCornerShape(20.dp),
+                        maxLines = 4,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent
+                        )
                     )
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    IconButton(
+                        onClick = {
+                            if (textInput.isNotBlank() || imagemAnexadaUri != null) {
+                                viewModel.sendMessage(textInput)
+                                textInput = ""
+                                imagemAnexadaUri = null
+                            }
+                        },
+                        enabled = (textInput.isNotBlank() || imagemAnexadaUri != null) && !isGenerating,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if ((textInput.isNotBlank() || imagemAnexadaUri != null) && !isGenerating)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            )
+                            .testTag("send_message_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Enviar Mensagem",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
