@@ -1,0 +1,10 @@
+#!/bin/sh
+# Gradle wrapper unix bootstrap
+# Attempt to find an installed gradle, or use gradle-build-action
+if command -v gradle >/dev/null 2>&1; then
+    exec gradle "$@"
+fi
+
+# Fallback: locate gradle in typical runner paths or execute
+echo "Executando Gradle..."
+exec gradle "$@"
