@@ -1,5 +1,9 @@
 package com.example.ui.viewmodel
 
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
@@ -39,7 +43,53 @@ import java.util.Calendar
 import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class VehicleViewModel(application: Application) : AndroidViewModel(application) {
+class VehicleViewModel(application: Application) : AndroidViewModel(application) {// Inicializa o Firebase Authentication
+    private val auth = FirebaseAuth.getInstance()
+
+    // Estado do usuário logado (se for nulo, mostra a tela de login)
+    var currentUser by mutableStateOf(auth.currentUser)
+        private set
+
+    // Estado para guardar mensagens de erro (ex: senha fraca, usuário não encontrado)
+    var authError by mutableStateOf<String?>(null)
+        private set
+
+    fun loginUser(email: String, pass: String) {
+        if (email.isBlank() || pass.isBlank()) {
+            authError = "Preencha todos os campos."
+            return
+        }
+        authError = null
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    currentUser = auth.currentUser
+                } else {
+                    authError = task.exception?.message ?: "Erro ao fazer login."
+                }
+            }
+    }
+
+    fun registerUser(email: String, pass: String) {
+        if (email.isBlank() || pass.isBlank()) {
+            authError = "Preencha todos os campos."
+            return
+        }
+        authError = null
+        auth.createUserWithEmailAndPassword(email, pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    currentUser = auth.currentUser
+                } else {
+                    authError = task.exception?.message ?: "Erro ao criar conta."
+                }
+            }
+    }
+
+    fun logout() {
+        auth.signOut()
+        currentUser = null
+    }
 
     private val database = AppDatabase.getInstance(application)
     private val repository = FuelRepository(database)
