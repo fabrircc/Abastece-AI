@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "214838312519",
+    "project_id": "abastece-ai-1ff31",
+    "storage_bucket": "abastece-ai-1ff31.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:214838312519:android:860ce083d5b6588c48fb62",
+        "android_client_info": {
+          "package_name": "com.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqHAsBdXQzKbUsChOl4637EVlv2YjV4Is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
