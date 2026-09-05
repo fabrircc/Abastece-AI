@@ -13,6 +13,13 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services") // <-- Adicione esta linha aqui
     // ... outros plugins
+dependencies {
+    // Importa o Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    
+    // Produtos do Firebase que vamos usar
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
 
 }
