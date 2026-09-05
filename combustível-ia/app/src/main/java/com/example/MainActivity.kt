@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.ui.screens.LoginScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,7 +17,9 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -64,7 +67,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 val viewModel: VehicleViewModel = viewModel()
-                MainAppScreen(viewModel = viewModel)
+                
+                // Observa o estado do usuário logado no Firebase
+                val currentUser = viewModel.currentUser
+
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // Trava de segurança: Se não estiver logado, exibe a tela de login
+                    if (currentUser == null) {
+                        LoginScreen(viewModel = viewModel)
+                    } else {
+                        MainAppScreen(viewModel = viewModel)
+                    }
+                }
             }
         }
     }
