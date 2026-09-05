@@ -76,6 +76,12 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
+// Importa o Firebase BoM (Gerenciador de Versões)
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    
+    // Bibliotecas de Autenticação e Banco de Dados
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))
   // implementation(libs.accompanist.permissions)
