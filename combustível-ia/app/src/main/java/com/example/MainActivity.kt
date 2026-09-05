@@ -1,6 +1,5 @@
 package com.example
 
-import com.example.ui.screens.LoginScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,15 +16,14 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,18 +39,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.screens.ChatScreen
+import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.MetricsScreen
 import com.example.ui.screens.RecordsScreen
 import com.example.ui.screens.ReportsScreen
-import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.theme.SleekBorder
-import com.example.ui.theme.SleekNavyPrimary
-import com.example.ui.theme.SleekOnPrimaryContainer
-import com.example.ui.theme.SleekPrimaryContainer
-import com.example.ui.theme.SleekTextSecondary
 import com.example.ui.viewmodel.VehicleViewModel
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationRailItemDefaults
 
 data class NavItem(
     val title: String,
@@ -65,17 +56,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            MaterialTheme {
                 val viewModel: VehicleViewModel = viewModel()
-                
-                // Observa o estado do usuário logado no Firebase
                 val currentUser = viewModel.currentUser
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Trava de segurança: Se não estiver logado, exibe a tela de login
+                    // Trava de segurança do Firebase: se não estiver logado, exibe a tela de login
                     if (currentUser == null) {
                         LoginScreen(viewModel = viewModel)
                     } else {
@@ -125,19 +114,7 @@ fun MainAppScreen(viewModel: VehicleViewModel) {
                             selected = isSelected,
                             onClick = { selectedIndex = index },
                             icon = { Icon(item.icon, contentDescription = item.title) },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = SleekNavyPrimary,
-                                selectedTextColor = SleekOnPrimaryContainer,
-                                indicatorColor = SleekPrimaryContainer,
-                                unselectedIconColor = SleekTextSecondary.copy(alpha = 0.55f),
-                                unselectedTextColor = SleekTextSecondary.copy(alpha = 0.65f)
-                            ),
+                            label = { Text(text = item.title) },
                             modifier = Modifier.testTag(item.tag)
                         )
                     }
@@ -171,19 +148,7 @@ fun MainAppScreen(viewModel: VehicleViewModel) {
                             selected = isSelected,
                             onClick = { selectedIndex = index },
                             icon = { Icon(item.icon, contentDescription = item.title) },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
-                                )
-                            },
-                            colors = NavigationRailItemDefaults.colors(
-                                selectedIconColor = SleekNavyPrimary,
-                                selectedTextColor = SleekOnPrimaryContainer,
-                                indicatorColor = SleekPrimaryContainer,
-                                unselectedIconColor = SleekTextSecondary.copy(alpha = 0.55f),
-                                unselectedTextColor = SleekTextSecondary.copy(alpha = 0.65f)
-                            ),
+                            label = { Text(text = item.title) },
                             modifier = Modifier.testTag(item.tag)
                         )
                     }
