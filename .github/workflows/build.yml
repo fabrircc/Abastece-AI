@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código
+      - name: Baixar o código do repositório
         uses: actions/checkout@v4
 
       - name: Configurar Java 17
@@ -20,17 +20,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Gerar Keystore de Debug e Compilar APK
+      - name: Preparar, Assinar e Compilar APK
         run: |
+          # Encontra a pasta exata do projeto Android e entra nela dinamicamente
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
           
-          # Gera uma chave de assinatura de debug falsa/provisória para o GitHub Actions
+          # Gera a chave de segurança de debug necessária para o Android aceitar a instalação
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           
+          # Permissão e execução do build do Gradle
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
-      - name: Disponibilizar APK para Download
+      - name: Disponibilizar Instalador (APK)
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
