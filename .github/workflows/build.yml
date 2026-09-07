@@ -20,7 +20,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Compilar APK com Gradle Manual
+      - name: Forçar Gradle 8.10.2 no Projeto
+        run: |
+          # Localiza e reescreve o arquivo de configuração do wrapper diretamente para a versão 8.10.2
+          PROPERTIES_FILE=$(find . -name "gradle-wrapper.properties" | head -n 1)
+          echo "Atualizando arquivo: $PROPERTIES_FILE"
+          cat << EOF > "$PROPERTIES_FILE"
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+
+      - name: Compilar APK
         run: |
           export LANG=C.UTF-8
           export LC_ALL=C.UTF-8
@@ -30,13 +43,10 @@ jobs:
           # Garante permissão de execução
           chmod +x ./gradlew
           
-          # Atualiza o wrapper para a versão 8.10.2 recomendada pelo GitHub
-          ./gradlew wrapper --gradle-version 8.10.2 --distribution-type bin
-          
           # Gera a chave de segurança de debug
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           
-          # Compila o projeto
+          # Executa o build usando o Gradle 8.10.2 configurado
           ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Disponibilizar Instalador (APK)
