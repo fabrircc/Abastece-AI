@@ -20,15 +20,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Fixar Gradle na versão 8.7 (Compatível)
+      - name: Ajustar Gradle Wrapper para versão 8.7 (Compatível)
         run: |
-          cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
-          chmod +x ./gradlew
-          ./gradlew wrapper --gradle-version 8.7
+          PROPERTIES_FILE=$(find . -name "gradle-wrapper.properties" | head -n 1)
+          echo "Atualizando arquivo: $PROPERTIES_FILE"
+          cat << EOF > "$PROPERTIES_FILE"
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
 
       - name: Preparar, Assinar e Compilar APK
         run: |
-          # Encontra a pasta exata do projeto Android e entra nela dinamicamente
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
           
           # Gera a chave de segurança de debug necessária para o Android
