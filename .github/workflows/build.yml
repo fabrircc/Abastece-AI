@@ -23,6 +23,7 @@ jobs:
       - name: Fixar Gradle na versão 8.7 (Compatível)
         run: |
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
+          chmod +x ./gradlew
           ./gradlew wrapper --gradle-version 8.7
 
       - name: Preparar, Assinar e Compilar APK
