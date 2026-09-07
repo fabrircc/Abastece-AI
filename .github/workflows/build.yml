@@ -2,7 +2,7 @@ name: Gerar APK Android
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código do repositório
+      - name: Baixar código do repositório
         uses: actions/checkout@v4
 
       - name: Configurar Java 17
@@ -20,38 +20,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Forçar Gradle 8.10.2 no Projeto
+      - name: Configurar Gradle 8.11.1 (Estável e Compatível)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+          cache-disabled: false
+
+      - name: Compilar APK Android
         run: |
-          # Localiza e reescreve o arquivo de configuração do wrapper diretamente para a versão 8.10.2
-          PROPERTIES_FILE=$(find . -name "gradle-wrapper.properties" | head -n 1)
-          echo "Atualizando arquivo: $PROPERTIES_FILE"
-          cat << EOF > "$PROPERTIES_FILE"
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-
-      - name: Compilar APK
-        run: |
-          export LANG=C.UTF-8
-          export LC_ALL=C.UTF-8
-
-          cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
+          # Detecta onde está o arquivo build.gradle.kts do app
+          if [ -f "./build.gradle.kts" ]; then
+            TARGET_DIR="."
+          else
+            # Procura a pasta que contém o projeto Android
+            TARGET_DIR=$(find . -maxdepth 2 -name "build.gradle.kts" -not -path "./app/*" | head -n 1 | xargs dirname)
+          fi
           
-          # Garante permissão de execução
-          chmod +x ./gradlew
+          echo "Diretório do projeto detectado: $TARGET_DIR"
+          cd "$TARGET_DIR"
           
-          # Gera a chave de segurança de debug
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          
-          # Executa o build usando o Gradle 8.10.2 configurado
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          # Executa o build utilizando o Gradle 8.11.1 configurado
+          gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Disponibilizar Instalador (APK)
+      - name: Disponibilizar APK para Download
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          path: "**/app/build/outputs/apk/debug/*.apk"
+          path: "**/build/outputs/apk/debug/*.apk"
           retention-days: 14
