@@ -22,17 +22,16 @@ jobs:
 
       - name: Compilar APK com Gradle Manual
         run: |
-          # Força o suporte a caracteres UTF-8 para localizar a pasta com acento corretamente
           export LANG=C.UTF-8
           export LC_ALL=C.UTF-8
 
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
           
-          # Garante permissão de execução ANTES de qualquer comando
+          # Garante permissão de execução
           chmod +x ./gradlew
           
-          # Garante a versão correta do gradle no wrapper localmente
-          ./gradlew wrapper --gradle-version 8.7 --distribution-type bin
+          # Atualiza o wrapper para a versão 8.10.2 recomendada pelo GitHub
+          ./gradlew wrapper --gradle-version 8.10.2 --distribution-type bin
           
           # Gera a chave de segurança de debug
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
