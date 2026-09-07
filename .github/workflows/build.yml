@@ -20,12 +20,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Fixar Gradle na versão 8.7 (Compatível)
+        run: |
+          cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
+          ./gradlew wrapper --gradle-version 8.7
+
       - name: Preparar, Assinar e Compilar APK
         run: |
           # Encontra a pasta exata do projeto Android e entra nela dinamicamente
           cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
           
-          # Gera a chave de segurança de debug necessária para o Android aceitar a instalação
+          # Gera a chave de segurança de debug necessária para o Android
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           
           # Permissão e execução do build do Gradle
