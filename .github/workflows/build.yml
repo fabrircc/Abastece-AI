@@ -20,17 +20,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Ajustar Gradle Wrapper para versão 8.7 (Compatível)
-        run: |
-          PROPERTIES_FILE=$(find . -name "gradle-wrapper.properties" | head -n 1)
-          echo "Atualizando arquivo: $PROPERTIES_FILE"
-          cat << EOF > "$PROPERTIES_FILE"
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
+      - name: Configurar Gradle 8.7 Oficial
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
 
       - name: Preparar, Assinar e Compilar APK
         run: |
