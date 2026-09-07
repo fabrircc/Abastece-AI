@@ -1,68 +1,40 @@
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
-}
+name: Gerar APK Android
 
-android {
-    namespace = "com.example"
-    compileSdk = 34
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-    defaultConfig {
-        applicationId = "com.example"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+jobs:
+  build:
+    name: Compilar APK Android
+    runs-on: ubuntu-latest
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-    }
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v4
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0} {LGPL2.1}"
-        }
-    }
-}
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-dependencies {
-    // Firebase BoM and Services
-    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+      - name: Configurar Gradle 8.7 Oficial
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
 
-    // Core Android & Compose
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-}
+      - name: Preparar, Assinar e Compilar APK
+        run: |
+          cd "$(dirname "$(find . -name "gradlew" | head -n 1)")"
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Disponibilizar Instalador (APK)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: "**/app/build/outputs/apk/debug/*.apk"
+          retention-days: 14
