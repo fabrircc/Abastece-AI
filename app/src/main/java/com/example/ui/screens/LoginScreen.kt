@@ -124,5 +124,21 @@ fun LoginScreen(viewModel: VehicleViewModel) {
                 color = MaterialTheme.colorScheme.primary
             )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Opção para utilizar o app offline/convidado
+        OutlinedButton(
+            onClick = { viewModel.continueAsGuest() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Continuar sem login (Modo Offline)",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }

@@ -42,53 +42,102 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class VehicleViewModel(application: Application) : AndroidViewModel(application) {// Inicializa o Firebase Authentication
-    private val auth = FirebaseAuth.getInstance()
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 
-    // Estado do usuário logado (se for nulo, mostra a tela de login)
-    var currentUser by mutableStateOf(auth.currentUser)
+@OptIn(ExperimentalCoroutinesApi::class)
+class VehicleViewModel(application: Application) : AndroidViewModel(application) {
+    // Inicializa o Firebase Authentication com fallback seguro
+    private val auth: FirebaseAuth? = try {
+        if (FirebaseApp.getApps(application).isEmpty()) {
+            val app = try {
+                FirebaseApp.initializeApp(application)
+            } catch (t: Throwable) {
+                null
+            }
+            if (app == null) {
+                val options = FirebaseOptions.Builder()
+                    .setApplicationId("1:214838312519:android:860ce083d5b6588c48fb62")
+                    .setApiKey("AIzaSyAqHAsBdXQzKbUsChOl4637EVlv2YjV4Is")
+                    .setProjectId("abastece-ai-1ff31")
+                    .setStorageBucket("abastece-ai-1ff31.firebasestorage.app")
+                    .setGcmSenderId("214838312519")
+                    .build()
+                FirebaseApp.initializeApp(application, options)
+            }
+        }
+        FirebaseAuth.getInstance()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        null
+    }
+
+    // Estado do usuário logado (se for nulo e não for convidado, mostra a tela de login)
+    var currentUser by mutableStateOf(auth?.currentUser)
         private set
+
+    // Permite utilizar o app sem login (modo offline / convidado)
+    var isGuestMode by mutableStateOf(false)
+        private set
+
+    fun continueAsGuest() {
+        isGuestMode = true
+    }
 
     // Estado para guardar mensagens de erro (ex: senha fraca, usuário não encontrado)
     var authError by mutableStateOf<String?>(null)
         private set
 
     fun loginUser(email: String, pass: String) {
+        val fbAuth = auth
+        if (fbAuth == null) {
+            authError = "Serviço de autenticação offline. Você pode continuar como convidado."
+            return
+        }
         if (email.isBlank() || pass.isBlank()) {
             authError = "Preencha todos os campos."
             return
         }
         authError = null
-        auth.signInWithEmailAndPassword(email, pass)
+        fbAuth.signInWithEmailAndPassword(email.trim(), pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    currentUser = auth.currentUser
+                    currentUser = fbAuth.currentUser
                 } else {
-                    authError = task.exception?.message ?: "Erro ao fazer login."
+                    authError = task.exception?.localizedMessage ?: "Erro ao fazer login."
                 }
             }
     }
 
     fun registerUser(email: String, pass: String) {
+        val fbAuth = auth
+        if (fbAuth == null) {
+            authError = "Serviço de autenticação offline. Você pode continuar como convidado."
+            return
+        }
         if (email.isBlank() || pass.isBlank()) {
             authError = "Preencha todos os campos."
             return
         }
         authError = null
-        auth.createUserWithEmailAndPassword(email, pass)
+        fbAuth.createUserWithEmailAndPassword(email.trim(), pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    currentUser = auth.currentUser
+                    currentUser = fbAuth.currentUser
                 } else {
-                    authError = task.exception?.message ?: "Erro ao criar conta."
+                    authError = task.exception?.localizedMessage ?: "Erro ao criar conta."
                 }
             }
     }
 
     fun logout() {
-        auth.signOut()
+        try {
+            auth?.signOut()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
         currentUser = null
+        isGuestMode = false
     }
 
     private val database = AppDatabase.getInstance(application)

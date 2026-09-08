@@ -8,6 +8,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+import org.robolectric.Robolectric
+
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
 class ExampleRobolectricTest {
@@ -17,5 +19,12 @@ class ExampleRobolectricTest {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val appName = context.getString(R.string.app_name)
     assertEquals("Combustível IA", appName)
+  }
+
+  @Test
+  fun `launch main activity`() {
+    val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+    val activity = controller.get()
+    assert(activity != null)
   }
 }

@@ -64,8 +64,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Trava de segurança do Firebase: se não estiver logado, exibe a tela de login
-                    if (currentUser == null) {
+                    // Se não estiver logado nem no modo convidado, exibe a tela de login
+                    if (currentUser == null && !viewModel.isGuestMode) {
                         LoginScreen(viewModel = viewModel)
                     } else {
                         MainAppScreen(viewModel = viewModel)
